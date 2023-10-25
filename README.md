@@ -1,7 +1,7 @@
 # BENDS (Build Error Notification Dispatch System)
 
 A tool that checks the status of the most recently executed scheduled pipeline of Bitbucket repositories associated with 
-services listed in the Datadog Service Catalog.
+services listed in the Datadog Service Catalog and reports the results to service owners in Slack.
 
 An AWS CloudFormation template is included in this repository to facilitate the automation of this script's execution 
 through the use of an AWS Lambda function.
@@ -10,7 +10,8 @@ through the use of an AWS Lambda function.
 
 Alongside **Python 3.11+**, the following packages must be installed to run this tool:
 - boto3
-- requirements
+- requests
+- datadog-api-client
 
 Additionally, you need to have both AWS CLI & AWS SAM CLI installed and configured. The following guides provide 
 detailed instructions on how to do so:
@@ -28,11 +29,11 @@ Whether you plan to run the script locally or to deploy a Lambda function, you m
    - Datadog Key: apm_service_catalog_read
 3. Create a Slack webhook that can access the channels you would like the script to post to
 4. Set environment variables:
-   1. BB_APP_PASS=_<bitbucket-app-pass>_
-   2. BB_USER_ID=_<bitbucket-user-id>_
-   3. DD_API_KEY=_<datadog-api-key>_
-   4. DD_APP_KEY=_<datadog-app-key>_
-   5. SLACK_WEBHOOK_URL=_<slack-webhook-url>_
+   1. BB_APP_PASS
+   2. BB_USER_ID
+   3. DD_API_KEY
+   4. DD_APP_KEY
+   5. SLACK_WEBHOOK_URL
 5. Set values specific to your use case for the two global variables found at the top of bob_the_builder.py.
 6. Depending on how the different team channels are named in Slack, you may need to modify the post_to_slack function
 to post to the correct channels.
