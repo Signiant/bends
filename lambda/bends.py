@@ -15,6 +15,7 @@ logging.basicConfig(format="%(asctime)s - %(levelname)8s: %(message)s", stream=s
 logging.getLogger("requests").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 
+OVERALL_SUMMARY_RECIPIENT = ""  # Set to the name of the team receiving the overall summary
 WORKSPACE = ""  # Set Bitbucket workspace name to be used in HTTP requests
 
 
@@ -498,7 +499,7 @@ def process_services(teams: list[str], override: list[str], data: str, dry_run: 
         overall_summary = generate_overall_summary(teams_recent_builds)
 
         team_summaries = generate_team_summaries(teams_recent_builds)
-        team_summaries["sre"] = overall_summary
+        team_summaries[OVERALL_SUMMARY_RECIPIENT] = overall_summary
 
         post_team_summaries_to_slack(team_summaries)
 
