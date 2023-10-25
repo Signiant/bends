@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lambda that notifies teams of scheduled build states in active services not currently being developed.
+
+Parameters:
+  AppName:
+    Type: String
+    Default: "bends"
+    AllowedPattern: ^[-a-z]+$
+    Description: "Note: Must be all lowercase"
+  EnvName:
+    Type: String
+    Default: "dev"
+    AllowedPattern: ^[-a-z]+$
+    Description: "Note: Must be all lowercase"
+  DryRun:
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+    Description: "Note: Must be all lowercase"
+  Verbose:
+    Type: String
+    AllowedValues:
+    - "true"
+    - "false"
+    Default: "false"
+    Description: "Note: Must be all lowercase"
+  BBAPPPASS:
+    Type: String
+    Description: "Bitbucket app password"
+  BBUSERID:
+    Type: String
+    Description: "Bitbucket user Id"
+  DDAPIKEY:
+    Type: String
+    Description: "Datadog API key"
+  DDAPPKEY:
+    Type: String
+    Description: "Datadog app key"
+  SLACKWEBHOOKURL:
+    Type: String
+    Description: "Webhook for Slack integration"
+
+Conditions:
+  EnableSchedule: !Equals
+    - !Ref EnvName
+    - prod
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Ref AppName
+      Handler: bends.lambda_handler
+      Runtime: python3.11
+      CodeUri: lambda/
+      Description: Lambda that notifies teams of scheduled build states in active services not currently being developed.
+      MemorySize: 128
+      Timeout: 900
+      Environment:
+        Variables:
+          BB_APP_PASS:
+            !Ref BBAPPPASS
+          BB_USER_ID:
+            !Ref BBUSERID
+          DD_API_KEY:
+            !Ref DDAPIKEY
+          DD_APP_KEY:
+            !Ref DDAPPKEY
+          SLACK_WEBHOOK_URL:
+            !Ref SLACKWEBHOOKURL
+      Events:
+        ScheduledRule:
+          Type: Schedule
+          Properties:
+            Description: # A description for this event (e.g. "Run every Friday at 9am")
+            Schedule: # Schedule in cron format (e.g. "cron(0 13 ? * 6 *)")
+            State: !If [EnableSchedule, "ENABLED", "DISABLED"]
+            Input: !Sub "{\"dry_run\": ${DryRun}, 
+                          \"verbose\": ${Verbose}}"
